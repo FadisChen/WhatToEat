@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>今天吃什麼？</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="app-container">
+        <!-- Background map -->
+        <div id="map"></div>
+
+        <!-- Main content -->
+        <div class="glass-container">
+            <!-- Settings View -->
+            <div id="settings-view" class="view">
+                <div class="view-header">
+                    <button id="back-from-settings-btn" class="back-btn">←</button>
+                    <h2>設定</h2>
+                </div>
+                <div class="view-content">
+                    <div class="form-group">
+                        <label for="api-key">Google Maps API 金鑰:</label>
+                        <input type="password" id="api-key" name="api-key" placeholder="請輸入您的 API 金鑰">
+                    </div>
+                    <div class="form-group">
+                        <label for="radius">搜尋半徑: <span id="radius-value">1000</span>公尺</label>
+                        <input type="range" id="radius" name="radius" min="100" max="2000" step="100" value="1000">
+                    </div>
+                    <fieldset class="form-group">
+                        <legend>店家類型</legend>
+                        <div class="checkbox-group">
+                            <label><input type="radio" name="place-type" value="飲料店" checked> 飲料店</label>
+                            <label><input type="radio" name="place-type" value="餐廳"> 餐廳</label>
+                            <label><input type="radio" name="place-type" value="咖啡廳"> 咖啡廳</label>
+                            <label><input type="radio" name="place-type" value="酒吧"> 酒吧</label>
+                        </div>
+                    </fieldset>
+                    <button id="save-and-search-btn" class="primary-btn">儲存並搜尋</button>
+                </div>
+            </div>
+
+            <!-- Results View -->
+            <div id="results-view" class="view">
+                 <div class="view-header">
+                    <button id="back-from-results-btn" class="back-btn">←</button>
+                    <h2>搜尋結果</h2>
+                    <button id="random-btn" class="header-btn">🎲</button>
+                </div>
+                <div id="results-container" class="scrollable"></div>
+            </div>
+
+        </div>
+
+        <!-- Action Buttons -->
+        <button id="settings-btn" class="fab">⚙️</button>
+        <button id="search-btn" class="fab">🔍</button>
+    </div>
+
+    <script src="script.js"></script>
+    <script id="google-maps-script" async defer></script>
+</body>
+</html>
