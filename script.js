@@ -103,6 +103,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function loadSettings() {
         const savedApiKey = localStorage.getItem('googleMapsApiKey');
         const savedPlaceTypes = JSON.parse(localStorage.getItem('placeTypes'));
+        const savedOpenNow = localStorage.getItem('openNow') === 'true';
 
         if (savedApiKey) {
             apiKeyInput.value = savedApiKey;
@@ -110,6 +111,9 @@ document.addEventListener('DOMContentLoaded', () => {
             showView(null); // Show map only if API key exists
         } else {
             showView(settingsView); // Show settings if no API key
+        }
+        if (savedOpenNow) {
+            openNowCheckbox.checked = savedOpenNow;
         }
 
         if (savedPlaceTypes) {
@@ -180,7 +184,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const center = marker.getPosition();
         const circle = new google.maps.Circle({ center: center, radius: 2000 });
-        const openNow = localStorage.getItem('open-now') === 'true';
+        const openNow = localStorage.getItem('openNow') === 'true';
         const request = {
             query: placeTypes.join(' '),
             bounds: circle.getBounds(),
@@ -189,6 +193,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         service.textSearch(request, (results, status) => {
             resultsContainer.innerHTML = ''; // Clear previous results
+            resultsContainer.scrollTop = 0; // 將捲軸滾動到最上方
             hideLoading();
             
             if (status === google.maps.places.PlacesServiceStatus.OK && results) {
@@ -244,6 +249,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (status === google.maps.places.PlacesServiceStatus.OK) {
                 currentPlace = placeDetails;
                 displayPlaceDetails(placeDetails);
+                detailsContent.scrollTop = 0; // 將捲軸滾動到最上方
                 showView(detailsView);
             } else {
                 alert('無法載入店家詳細資訊');
