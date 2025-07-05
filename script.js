@@ -42,10 +42,11 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const apiKeyExists = !!localStorage.getItem('googleMapsApiKey');
         const isSettings = viewToShow === settingsView;
+        const isResults = viewToShow === resultsView;
 
         // Control FAB visibility
-        settingsBtn.style.display = isSettings ? 'none' : 'flex';
-        searchBtn.style.display = isSettings || !apiKeyExists ? 'none' : 'flex';
+        settingsBtn.style.display = isSettings || isResults ? 'none' : 'flex';
+        searchBtn.style.display = isSettings || !apiKeyExists || isResults ? 'none' : 'flex';
         randomBtn.style.display = (viewToShow === resultsView && currentResults.length > 0) ? 'block' : 'none';
     }
 
@@ -77,8 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     backFromSettingsBtn.addEventListener('click', () => {
         // Go back to the view that was active before settings, or default to map view
-        const targetView = (lastView && lastView.id !== 'settings-view' ? lastView : null);
-        showView(targetView);
+        showView(null); // Always go back to map view
     });
 
     backFromResultsBtn.addEventListener('click', () => {
