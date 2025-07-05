@@ -18,6 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const apiKeyInput = document.getElementById('api-key');
     const radiusSlider = document.getElementById('radius');
     const radiusValue = document.getElementById('radius-value');
+    const openNowCheckbox = document.getElementById('open-now');
     const resultsContainer = document.getElementById('results-container');
     const googleMapsScript = document.getElementById('google-maps-script');
     
@@ -64,12 +65,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         localStorage.setItem('googleMapsApiKey', apiKey);
         localStorage.setItem('searchRadius', radiusSlider.value);
+        localStorage.setItem('openNow', openNowCheckbox.checked);
         const placeTypes = Array.from(document.querySelectorAll('input[name="place-type"]:checked')).map(cb => cb.value);
         localStorage.setItem('placeTypes', JSON.stringify(placeTypes));
 
-        alert('設定已儲存！');
-        showView(resultsView);
-
+        showView(null);
         if (!map) {
             loadGoogleMap(); // Will search after init
         }
@@ -172,11 +172,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const center = marker.getPosition();
         const radius = parseInt(localStorage.getItem('searchRadius') || '1000', 10);
         const circle = new google.maps.Circle({ center: center, radius: radius });
-
+        const openNow = localStorage.getItem('open-now');
         const request = {
             query: placeTypes.join(' '),
             bounds: circle.getBounds(),
-            openNow: true
+            openNow: openNow
         };
 
         service.textSearch(request, (results, status) => {
@@ -235,7 +235,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const currentIndex = intervalCount % cards.length;
             const currentCard = cards[currentIndex];
             currentCard.classList.add('selected');
-            currentCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            currentCard.scrollIntoView({ behavior: 'instant', block: 'center' });
             
             intervalCount++;
 
@@ -245,6 +245,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const finalIndex = Math.floor(Math.random() * cards.length);
                 cards.forEach(card => card.classList.remove('selected'));
                 const finalCard = cards[finalIndex];
+                finalCard.scrollIntoView({ behavior: 'instant', block: 'center' });
                 
                 let blinkCount = 0;
                 const blinkInterval = setInterval(() => {
@@ -253,7 +254,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (blinkCount >= 6) {
                         clearInterval(blinkInterval);
                         finalCard.classList.add('selected');
-                        finalCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        finalCard.scrollIntoView({ behavior: 'instant', block: 'center' });
                     }
                 }, 200);
             }

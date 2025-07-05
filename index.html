@@ -29,6 +29,10 @@
                         <label for="radius">搜尋半徑: <span id="radius-value">1000</span>公尺</label>
                         <input type="range" id="radius" name="radius" min="100" max="2000" step="100" value="1000">
                     </div>
+                    <div class="form-group">
+                        <label for="location">只顯示營業中:<input type="checkbox" id="open-now" name="open-now" checked></label>
+                        
+                    </div>
                     <fieldset class="form-group">
                         <legend>店家類型</legend>
                         <div class="checkbox-group">
@@ -38,7 +42,7 @@
                             <label><input type="radio" name="place-type" value="酒吧"> 酒吧</label>
                         </div>
                     </fieldset>
-                    <button id="save-and-search-btn" class="primary-btn">儲存並搜尋</button>
+                    <button id="save-and-search-btn" class="primary-btn">儲存</button>
                 </div>
             </div>
 
