@@ -169,6 +169,48 @@ body, html {
 }
 
 
+
+/* --- Loading Overlay --- */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(5px);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    z-index: 1000;
+}
+
+.loading-overlay.show {
+    display: flex;
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    border-top: 4px solid #fff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 20px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.loading-overlay p {
+    color: white;
+    font-size: 18px;
+    margin: 0;
+}
+
 /* --- Form Elements --- */
 .form-group {
     margin-bottom: 20px;
@@ -191,6 +233,7 @@ input[type="password"], input[type="text"] {
 input[type="range"] {
     width: 100%;
 }
+
 .checkbox-group {
     display: flex;
     flex-wrap: wrap;
@@ -198,6 +241,12 @@ input[type="range"] {
 }
 .checkbox-group label {
     font-weight: normal;
+}
+.checkbox-group label:has(#custom-place-type) {
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 5px; /* 可選：在單選框和文字輸入框之間增加一些間距 */
 }
 .primary-btn, .back-btn {
     border: none;
@@ -298,4 +347,5 @@ input[type="range"] {
         bottom: 20px;
         left: 20px;
     }
+
 }

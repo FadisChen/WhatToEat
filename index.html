@@ -27,11 +27,7 @@
                         <input type="password" id="api-key" name="api-key" placeholder="請輸入您的 API 金鑰">
                     </div>
                     <div class="form-group">
-                        <label for="radius">搜尋半徑: <span id="radius-value">1000</span>公尺</label>
-                        <input type="range" id="radius" name="radius" min="100" max="2000" step="100" value="1000">
-                    </div>
-                    <div class="form-group">
-                        <label for="location">只顯示營業中:<input type="checkbox" id="open-now" name="open-now" checked></label>
+                        <label>只顯示營業中:<input type="checkbox" id="open-now" name="open-now" checked></label>
                         
                     </div>
                     <fieldset class="form-group">
@@ -41,6 +37,7 @@
                             <label><input type="radio" name="place-type" value="餐廳"> 餐廳</label>
                             <label><input type="radio" name="place-type" value="咖啡廳"> 咖啡廳</label>
                             <label><input type="radio" name="place-type" value="酒吧"> 酒吧</label>
+                            <label><input type="radio" name="place-type" value="自定義"> <input type="text" id="custom-place-type" placeholder="請輸入店家類型"></label>
                         </div>
                     </fieldset>
                     <button id="save-and-search-btn" class="primary-btn">儲存</button>
@@ -57,11 +54,26 @@
                 <div id="results-container" class="scrollable"></div>
             </div>
 
+            <!-- Details View -->
+            <div id="details-view" class="view">
+                <div class="view-header">
+                    <button id="back-from-details-btn" class="back-btn">←</button>
+                    <h2>店家詳情</h2>
+                </div>
+                <div id="details-content" class="scrollable"></div>
+            </div>
+
         </div>
 
         <!-- Action Buttons -->
         <button id="settings-btn" class="fab">⚙️</button>
         <button id="search-btn" class="fab">🔍</button>
+
+        <!-- Loading Overlay -->
+        <div id="loading-overlay" class="loading-overlay">
+            <div class="loading-spinner"></div>
+            <p>搜尋中...</p>
+        </div>
     </div>
 
     <script src="script.js"></script>

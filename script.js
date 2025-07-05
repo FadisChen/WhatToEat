@@ -4,7 +4,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const handleBar = document.querySelector('.handle-bar-container');
     const settingsView = document.getElementById('settings-view');
     const resultsView = document.getElementById('results-view');
-    const views = [settingsView, resultsView];
+    const detailsView = document.getElementById('details-view');
+    const views = [settingsView, resultsView, detailsView];
 
     // Buttons
     const settingsBtn = document.getElementById('settings-btn');
@@ -13,17 +14,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const saveAndSearchBtn = document.getElementById('save-and-search-btn');
     const backFromSettingsBtn = document.getElementById('back-from-settings-btn');
     const backFromResultsBtn = document.getElementById('back-from-results-btn');
+    const backFromDetailsBtn = document.getElementById('back-from-details-btn');
 
     // Form Elements & Containers
     const apiKeyInput = document.getElementById('api-key');
-    const radiusSlider = document.getElementById('radius');
-    const radiusValue = document.getElementById('radius-value');
     const openNowCheckbox = document.getElementById('open-now');
     const resultsContainer = document.getElementById('results-container');
+    const detailsContent = document.getElementById('details-content');
+    const loadingOverlay = document.getElementById('loading-overlay');
     const googleMapsScript = document.getElementById('google-maps-script');
     
     let map, marker, service;
     let currentResults = [];
+    let currentPlace = null;
     let lastView = null; // To track the view before settings
 
     // --- View Management ---
@@ -43,10 +46,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const apiKeyExists = !!localStorage.getItem('googleMapsApiKey');
         const isSettings = viewToShow === settingsView;
         const isResults = viewToShow === resultsView;
+        const isDetails = viewToShow === detailsView;
 
         // Control FAB visibility
-        settingsBtn.style.display = isSettings || isResults ? 'none' : 'flex';
-        searchBtn.style.display = isSettings || !apiKeyExists || isResults ? 'none' : 'flex';
+        settingsBtn.style.display = (isSettings || isResults || isDetails) ? 'none' : 'flex';
+        searchBtn.style.display = (isSettings || !apiKeyExists || isResults || isDetails) ? 'none' : 'flex';
         randomBtn.style.display = (viewToShow === resultsView && currentResults.length > 0) ? 'block' : 'none';
     }
 
@@ -65,9 +69,12 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         localStorage.setItem('googleMapsApiKey', apiKey);
-        localStorage.setItem('searchRadius', radiusSlider.value);
         localStorage.setItem('openNow', openNowCheckbox.checked);
-        const placeTypes = Array.from(document.querySelectorAll('input[name="place-type"]:checked')).map(cb => cb.value);
+        let placeTypes = Array.from(document.querySelectorAll('input[name="place-type"]:checked')).map(cb => cb.value);
+        const customPlaceType = document.getElementById('custom-place-type');
+        if (customPlaceType.value && placeTypes.includes('自定義')) {
+            placeTypes.push(customPlaceType.value);
+        }
         localStorage.setItem('placeTypes', JSON.stringify(placeTypes));
 
         showView(null);
@@ -86,12 +93,15 @@ document.addEventListener('DOMContentLoaded', () => {
         resultsContainer.style.padding = ""; // Reset padding
     });
 
-    radiusSlider.addEventListener('input', () => radiusValue.textContent = radiusSlider.value);
+    backFromDetailsBtn.addEventListener('click', () => {
+        showView(resultsView);
+    });
+
+
 
     // --- Settings Persistence ---
     function loadSettings() {
         const savedApiKey = localStorage.getItem('googleMapsApiKey');
-        const savedRadius = localStorage.getItem('searchRadius');
         const savedPlaceTypes = JSON.parse(localStorage.getItem('placeTypes'));
 
         if (savedApiKey) {
@@ -102,10 +112,6 @@ document.addEventListener('DOMContentLoaded', () => {
             showView(settingsView); // Show settings if no API key
         }
 
-        if (savedRadius) {
-            radiusSlider.value = savedRadius;
-            radiusValue.textContent = savedRadius;
-        }
         if (savedPlaceTypes) {
             document.querySelectorAll('input[name="place-type"]').forEach(cb => cb.checked = false);
             savedPlaceTypes.forEach(type => {
@@ -161,18 +167,20 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         
+        showLoading();
+        
         const placeTypes = JSON.parse(localStorage.getItem('placeTypes') || '["餐廳"]');
         if (placeTypes.length === 0) {
             resultsContainer.innerHTML = '<p>請在設定中至少選擇一種店家類型。</p>';
             currentResults = [];
+            hideLoading();
             showView(resultsView);
             return;
         }
 
         const center = marker.getPosition();
-        const radius = parseInt(localStorage.getItem('searchRadius') || '1000', 10);
-        const circle = new google.maps.Circle({ center: center, radius: radius });
-        const openNow = localStorage.getItem('open-now');
+        const circle = new google.maps.Circle({ center: center, radius: 2000 });
+        const openNow = localStorage.getItem('open-now') === 'true';
         const request = {
             query: placeTypes.join(' '),
             bounds: circle.getBounds(),
@@ -181,6 +189,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         service.textSearch(request, (results, status) => {
             resultsContainer.innerHTML = ''; // Clear previous results
+            hideLoading();
+            
             if (status === google.maps.places.PlacesServiceStatus.OK && results) {
                 currentResults = results.slice(0, 20);
                 displayResults(currentResults);
@@ -212,12 +222,87 @@ document.addEventListener('DOMContentLoaded', () => {
                 <p>📍 ${distanceText}</p>
             `;
             card.addEventListener('click', () => {
-                const query = encodeURIComponent(`${place.name}, ${place.formatted_address}`);
-                const url = `https://www.google.com/maps/search/?api=1&query=${query}`;
-                window.open(url, '_blank');
+                showPlaceDetails(place);
             });
             resultsContainer.appendChild(card);
         });
+    }
+
+    // --- Place Details ---
+    function showPlaceDetails(place) {
+        showLoading();
+        currentPlace = place;
+        
+        const request = {
+            placeId: place.place_id,
+            fields: ['name', 'formatted_address', 'formatted_phone_number', 'website', 'rating', 'user_ratings_total', 'opening_hours', 'photos', 'reviews']
+        };
+
+        service.getDetails(request, (placeDetails, status) => {
+            hideLoading();
+            
+            if (status === google.maps.places.PlacesServiceStatus.OK) {
+                currentPlace = placeDetails;
+                displayPlaceDetails(placeDetails);
+                showView(detailsView);
+            } else {
+                alert('無法載入店家詳細資訊');
+            }
+        });
+    }
+
+    function displayPlaceDetails(place) {
+        let photosHtml = '';
+        if (place.photos && place.photos.length > 0) {
+            photosHtml = `<img src="${place.photos[0].getUrl({maxWidth: 400, maxHeight: 300})}" style="width: 100%; height: 200px; object-fit: cover; border-radius: 10px; margin-bottom: 15px;">`;
+        }
+
+        let openingHoursHtml = '';
+        if (place.opening_hours && place.opening_hours.weekday_text) {
+            openingHoursHtml = `
+                <div style="margin-bottom: 15px;">
+                    <strong>營業時間：</strong>
+                    <ul style="margin: 5px 0; padding-left: 20px;">
+                        ${place.opening_hours.weekday_text.map(day => `<li>${day}</li>`).join('')}
+                    </ul>
+                </div>
+            `;
+        }
+
+        let reviewsHtml = '';
+        if (place.reviews && place.reviews.length > 0) {
+            reviewsHtml = `
+                <div style="margin-bottom: 15px;">
+                    <strong>評論：</strong>
+                    ${place.reviews.slice(0, 3).map(review => `
+                        <div style="margin: 10px 0; padding: 10px; background: rgba(255,255,255,0.3); border-radius: 8px;">
+                            <div style="margin-bottom: 5px;">
+                                <strong>${review.author_name}</strong>
+                                <span style="color: #ff6b35;">★</span> ${review.rating}
+                            </div>
+                            <p style="margin: 0; font-size: 14px; color: #666;">${review.text}</p>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        detailsContent.innerHTML = `
+            ${photosHtml}
+            <h3 style="margin-top: 0;">${place.name}</h3>
+            <p><strong>地址：</strong>${place.formatted_address}</p>
+            ${place.formatted_phone_number ? `<p><strong>電話：</strong><a href="tel:${place.formatted_phone_number}">${place.formatted_phone_number}</a></p>` : ''}
+            ${place.website ? `<p><strong>網站：</strong><a href="${place.website}" target="_blank">${place.website}</a></p>` : ''}
+            <p><strong>評分：</strong>⭐ ${place.rating || '無評分'} (${place.user_ratings_total || 0} 則評論)</p>
+            ${openingHoursHtml}
+            ${reviewsHtml}
+            <div style="margin-top: 20px;">
+                <button onclick="window.open('https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.name + ', ' + place.formatted_address)}', '_blank')" 
+                        style="width: 100%; padding: 12px; background: rgba(255,255,255,0.8); border: none; border-radius: 8px; cursor: pointer; font-size: 16px;">
+                    在 Google 地圖中查看
+                </button>
+            </div>
+        `;
     }
 
     // --- Randomizer ---
@@ -260,6 +345,15 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }, 100);
     });
+
+    // --- Utility Functions ---
+    function showLoading() {
+        loadingOverlay.classList.add('show');
+    }
+
+    function hideLoading() {
+        loadingOverlay.classList.remove('show');
+    }
 
     // --- Initial Load ---
     loadSettings();
