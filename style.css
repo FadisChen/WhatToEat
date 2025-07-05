@@ -78,6 +78,8 @@ body, html {
 .view-header h2 {
     margin: 0;
     color: #1c1c1e;
+    flex-grow: 1;
+    text-align: center;
 }
 
 .header-btn {
@@ -86,9 +88,22 @@ body, html {
     font-size: 28px;
     cursor: pointer;
     padding: 0;
-    color: #34c759;
     transition: transform 0.2s ease;
     display: none; /* Hidden by default, shown via JS */
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.2); /* Liquid glass background */
+    backdrop-filter: blur(15px) saturate(180%);
+    -webkit-backdrop-filter: blur(15px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.3); /* Glass border */
+    color: #1c1c1e; /* Darker color for visibility */
+    font-size: 28px;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(31, 38, 135, 0.3); /* Adjust shadow for glass effect */
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
 }
 .header-btn:hover {
     transform: scale(1.1);
@@ -119,36 +134,38 @@ body, html {
     width: 60px;
     height: 60px;
     border-radius: 50%;
-    background-color: #007aff;
-    color: white;
+    background-color: rgba(255, 255, 255, 0.2); /* Liquid glass background */
+    backdrop-filter: blur(15px) saturate(180%);
+    -webkit-backdrop-filter: blur(15px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.3); /* Glass border */
+    color: #1c1c1e; /* Darker color for visibility */
     font-size: 28px;
-    border: none;
     cursor: pointer;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 12px rgba(31, 38, 135, 0.3); /* Adjust shadow for glass effect */
     z-index: 10;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: transform 0.2s ease, background-color 0.2s ease;
+    transition: transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
 }
 .fab:hover {
     transform: scale(1.05);
+    background-color: rgba(255, 255, 255, 0.3); /* Slightly more opaque on hover */
+    box-shadow: 0 6px 20px rgba(31, 38, 135, 0.4);
 }
 .fab:disabled {
-    background-color: #8e8e93;
+    background-color: rgba(142, 142, 147, 0.5); /* Adjusted disabled color */
     cursor: not-allowed;
 }
 
 #settings-btn {
     bottom: 30px;
     left: 30px;
-    background-color: #5856d6; /* A shade of purple for settings */
 }
 
 #search-btn {
     bottom: 30px;
     right: 30px;
-    background-color: #007aff;
 }
 
 
@@ -193,17 +210,32 @@ input[type="range"] {
 }
 .primary-btn {
     width: 100%;
-    background-color: #007aff;
-    color: white;
+    background-color: rgba(255, 255, 255, 0.2); /* Liquid glass background */
+    backdrop-filter: blur(15px) saturate(180%);
+    -webkit-backdrop-filter: blur(15px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.3); /* Glass border */
+    color: #1c1c1e; /* Darker color for visibility */
+    box-shadow: 0 4px 12px rgba(31, 38, 135, 0.2); /* Adjust shadow for glass effect */
 }
 .primary-btn:hover {
-    background-color: #0056b3;
+    background-color: rgba(255, 255, 255, 0.3); /* Slightly more opaque on hover */
+    box-shadow: 0 6px 20px rgba(31, 38, 135, 0.3);
 }
 .back-btn {
-    background: transparent;
+    background: rgba(255, 255, 255, 0.1); /* Liquid glass background */
+    backdrop-filter: blur(10px) saturate(150%);
+    -webkit-backdrop-filter: blur(10px) saturate(150%);
+    border: 1px solid rgba(255, 255, 255, 0.2); /* Glass border */
+    border-radius: 10px; /* Consistent with other buttons */
     font-size: 24px;
-    padding: 0;
-    color: #6c6c70;
+    padding: 8px 12px; /* Add some padding */
+    color: #333; /* Darker color for visibility */
+    box-shadow: 0 2px 8px rgba(31, 38, 135, 0.15);
+    transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+.back-btn:hover {
+    background-color: rgba(255, 255, 255, 0.2); /* Slightly more opaque on hover */
+    box-shadow: 0 4px 12px rgba(31, 38, 135, 0.25);
 }
 
 
