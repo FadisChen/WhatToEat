@@ -28,12 +28,22 @@
                 <div class="view-content">
                     <div class="form-group">
                         <label>只顯示營業中:<input type="checkbox" id="open-now" name="open-now" checked></label>
-                        
                     </div>
+                    
+                    <div class="form-group">
+                        <label for="search-radius">搜尋半徑: <span id="radius-value">2000</span> 公尺</label>
+                        <input type="range" id="search-radius" min="100" max="3000" step="100" value="1000">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="min-rating">最低評分: ⭐ <span id="rating-value">3.0</span></label>
+                        <input type="range" id="min-rating" min="1" max="4.5" step="0.5" value="3.0">
+                    </div>
+                    
                     <fieldset class="form-group">
                         <legend>店家類型</legend>
                         <div class="checkbox-group">
-                            <label><input type="radio" name="place-type" value="飲料店" checked> 飲料店</label>
+                            <label><input type="radio" name="place-type" value="手搖飲" checked> 手搖飲</label>
                             <label><input type="radio" name="place-type" value="餐廳"> 餐廳</label>
                             <label><input type="radio" name="place-type" value="咖啡廳"> 咖啡廳</label>
                             <label><input type="radio" name="place-type" value="自定義"> <input type="text" id="custom-place-type" placeholder="請輸入店家類型"></label>

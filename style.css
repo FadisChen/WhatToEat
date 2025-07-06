@@ -232,6 +232,46 @@ input[type="password"], input[type="text"] {
 }
 input[type="range"] {
     width: 100%;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+    outline: none;
+    margin: 10px 0;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+input[type="range"]::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.form-group label[for] {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+
+.form-group span {
+    color: #ff6b35;
+    font-weight: 700;
 }
 
 .checkbox-group {
@@ -276,7 +316,7 @@ input[type="range"] {
     -webkit-backdrop-filter: blur(10px) saturate(150%);
     border: 1px solid rgba(255, 255, 255, 0.2); /* Glass border */
     border-radius: 10px; /* Consistent with other buttons */
-    font-size: 24px;
+    font-size: 18px;
     padding: 8px 12px; /* Add some padding */
     color: #333; /* Darker color for visibility */
     box-shadow: 0 2px 8px rgba(31, 38, 135, 0.15);

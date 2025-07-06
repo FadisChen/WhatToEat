@@ -19,6 +19,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const customPlaceType = document.getElementById('custom-place-type');
     // Form Elements & Containers
     const openNowCheckbox = document.getElementById('open-now');
+    const searchRadiusSlider = document.getElementById('search-radius');
+    const minRatingSlider = document.getElementById('min-rating');
+    const radiusValueSpan = document.getElementById('radius-value');
+    const ratingValueSpan = document.getElementById('rating-value');
     const resultsContainer = document.getElementById('results-container');
     const detailsContent = document.getElementById('details-content');
     const loadingOverlay = document.getElementById('loading-overlay');
@@ -50,6 +54,9 @@ document.addEventListener('DOMContentLoaded', () => {
         // Control FAB visibility
         settingsBtn.style.display = (isSettings || isResults || isDetails) ? 'none' : 'flex';
         searchBtn.style.display = (isSettings || isResults || isDetails) ? 'none' : 'flex';
+        
+        // Control random button visibility - only show in results view
+        randomBtn.style.display = isResults ? 'flex' : 'none';
     }
 
     // --- Event Listeners ---
@@ -62,6 +69,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     saveAndSearchBtn.addEventListener('click', () => {               
         localStorage.setItem('openNow', openNowCheckbox.checked);
+        localStorage.setItem('searchRadius', searchRadiusSlider.value);
+        localStorage.setItem('minRating', minRatingSlider.value);
+        
         let placeTypes = Array.from(document.querySelectorAll('input[name="place-type"]:checked')).map(cb => cb.value);
         
         if (customPlaceType.value && placeTypes.includes('自定義')) {
@@ -79,15 +89,22 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelector('input[name="place-type"][value="自定義"]').checked = true;
     });
 
+    // Slider event listeners
+    searchRadiusSlider.addEventListener('input', (e) => {
+        radiusValueSpan.textContent = e.target.value;
+    });
+
+    minRatingSlider.addEventListener('input', (e) => {
+        ratingValueSpan.textContent = parseFloat(e.target.value).toFixed(1);
+    });
+
     backFromSettingsBtn.addEventListener('click', () => {
         showView(null);
-        randomBtn.style.display = 'none'; // 隱藏骰子按鈕
     });
 
     backFromResultsBtn.addEventListener('click', () => {
         showView(null);
         resultsContainer.style.padding = "";
-        randomBtn.style.display = 'none'; // 隱藏骰子按鈕
     });
 
     backFromDetailsBtn.addEventListener('click', () => {
@@ -98,6 +115,8 @@ document.addEventListener('DOMContentLoaded', () => {
     function loadSettings() {
         const savedPlaceTypes = JSON.parse(localStorage.getItem('placeTypes'));
         const savedOpenNow = localStorage.getItem('openNow') === 'true';
+        const savedRadius = localStorage.getItem('searchRadius') || '1000';
+        const savedMinRating = localStorage.getItem('minRating') || '3.0';
 
         initMap();
         showView(null);
@@ -105,6 +124,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (savedOpenNow) {
             openNowCheckbox.checked = savedOpenNow;
         }
+
+        // Load slider values
+        searchRadiusSlider.value = savedRadius;
+        radiusValueSpan.textContent = savedRadius;
+        minRatingSlider.value = savedMinRating;
+        ratingValueSpan.textContent = parseFloat(savedMinRating).toFixed(1);
 
         if (savedPlaceTypes) {
             document.querySelectorAll('input[name="place-type"]').forEach(cb => cb.checked = false);
@@ -169,7 +194,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (placeTypes.length === 0) {
             resultsContainer.innerHTML = '<p>請在設定中至少選擇一種店家類型。</p>';
             currentResults = [];
-            randomBtn.style.display = 'none'; // 隱藏骰子按鈕
             hideLoading();
             showView(resultsView);
             return;
@@ -177,13 +201,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const markerPos = marker.getLatLng();
         const openNow = localStorage.getItem('openNow') === 'true';
+        const searchRadius = localStorage.getItem('searchRadius') || '1000';
+        const minRating = localStorage.getItem('minRating') || '3.0';
         
         const params = new URLSearchParams({
             action: 'search',
             lat: markerPos.lat.toString(),
             lng: markerPos.lng.toString(),
             query: placeTypes.join(' '),
-            openNow: openNow.toString()
+            openNow: openNow.toString(),
+            radius: searchRadius,
+            minRating: minRating
         });
 
         try {
@@ -197,18 +225,15 @@ document.addEventListener('DOMContentLoaded', () => {
             if (data.status === 'OK' && data.results) {
                 currentResults = data.results;
                 displayResults(currentResults);
-                randomBtn.style.display = 'flex'; // 顯示骰子按鈕
             } else {
                 resultsContainer.innerHTML = `<p>找不到符合條件的店家。${data.error ? '錯誤：' + data.error : ''}</p>`;
                 currentResults = [];
-                randomBtn.style.display = 'none'; // 隱藏骰子按鈕
             }
             showView(resultsView);
         } catch (error) {
             hideLoading();
             resultsContainer.innerHTML = '<p>搜索失敗，請檢查網路連接或 Apps Script URL。</p>';
             currentResults = [];
-            randomBtn.style.display = 'none'; // 隱藏骰子按鈕
             showView(resultsView);
             console.error('搜索錯誤:', error);
         }

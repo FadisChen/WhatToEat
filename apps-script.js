@@ -1,8 +1,4 @@
-// Google Apps Script 代碼
-// 請將此代碼複製到 Google Apps Script 編輯器中
-
-// 請在這裡填入您的 Google Maps API Key
-const GOOGLE_MAPS_API_KEY = 'YOUR_GOOGLE_MAPS_API_KEY_HERE';
+const GOOGLE_MAPS_API_KEY = PropertiesService.getScriptProperties().getProperty('GOOGLE_MAPS_API_KEY');
 
 // 主要的 HTTP 請求處理函數
 function doGet(e) {
@@ -36,7 +32,7 @@ function handleRequest(e) {
 
 // 搜索地點
 function searchPlaces(params) {
-  const { lat, lng, query, openNow } = params;
+  const { lat, lng, query, openNow, radius, minRating } = params;
   
   if (!lat || !lng || !query) {
     return ContentService
@@ -44,9 +40,11 @@ function searchPlaces(params) {
       .setMimeType(ContentService.MimeType.JSON);
   }
 
-  // 構建 Google Places API 請求 URL
-  const radius = 2000; // 2公里半徑
-  let url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(query)}&location=${lat},${lng}&radius=${radius}&language=zh-TW&key=${GOOGLE_MAPS_API_KEY}`;
+  // 構建 Google Places API 請求 URL - 使用舊版但支援新參數
+  const searchRadius = radius || 1000;
+  const minRatingValue = parseFloat(minRating) || 3.0;
+  
+  let url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(query)}&location=${lat},${lng}&radius=${searchRadius}&language=zh-TW&key=${GOOGLE_MAPS_API_KEY}`;
   
   if (openNow === 'true') {
     url += '&opennow=true';
@@ -77,8 +75,13 @@ function searchPlaces(params) {
         };
       });
       
+      // 根據評分過濾結果（客戶端過濾確保準確性）
+      const filteredResults = results.filter(place => {
+        return !place.rating || place.rating >= minRatingValue;
+      });
+      
       return ContentService
-        .createTextOutput(JSON.stringify({status: 'OK', results: results}))
+        .createTextOutput(JSON.stringify({status: 'OK', results: filteredResults}))
         .setMimeType(ContentService.MimeType.JSON);
     } else {
       return ContentService
