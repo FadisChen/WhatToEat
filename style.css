@@ -70,26 +70,24 @@ body, html {
 .view-header {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
     margin-bottom: 15px;
     flex-shrink: 0;
+    position: relative;
 }
 
 .view-header h2 {
     margin: 0;
     color: #1c1c1e;
-    flex-grow: 1;
     text-align: center;
 }
 
-.header-btn {
-    background: transparent;
-    border: none;
-    font-size: 28px;
-    cursor: pointer;
-    padding: 0;
-    transition: transform 0.2s ease;
-    display: none; /* Hidden by default, shown via JS */
+#random-btn {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 60px;
+    height: 60px;
     border-radius: 50%;
     background-color: rgba(255, 255, 255, 0.2); /* Liquid glass background */
     backdrop-filter: blur(15px) saturate(180%);
@@ -99,14 +97,16 @@ body, html {
     font-size: 28px;
     cursor: pointer;
     box-shadow: 0 4px 12px rgba(31, 38, 135, 0.3); /* Adjust shadow for glass effect */
-    z-index: 10;
-    display: flex;
+    z-index: 15;
+    display: none; /* Hidden by default, shown via JS */
     align-items: center;
     justify-content: center;
     transition: transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
 }
-.header-btn:hover {
+#random-btn:hover {
     transform: scale(1.1);
+    background-color: rgba(255, 255, 255, 0.3);
+    box-shadow: 0 6px 20px rgba(31, 38, 135, 0.4);
 }
 
 .scrollable {
@@ -159,8 +159,8 @@ body, html {
 }
 
 #settings-btn {
-    bottom: 30px;
-    left: 30px;
+    bottom: 100px;
+    right: 30px;
 }
 
 #search-btn {
@@ -281,6 +281,9 @@ input[type="range"] {
     color: #333; /* Darker color for visibility */
     box-shadow: 0 2px 8px rgba(31, 38, 135, 0.15);
     transition: background-color 0.2s ease, box-shadow 0.2s ease;
+    position: absolute;
+    top: 0;
+    right: 0;
 }
 .back-btn:hover {
     background-color: rgba(255, 255, 255, 0.2); /* Slightly more opaque on hover */
@@ -344,8 +347,14 @@ input[type="range"] {
         right: 20px;
     }
     #settings-btn {
-        bottom: 20px;
-        left: 20px;
+        bottom: 85px;
+        right: 20px;
     }
-
+    #random-btn {
+        bottom: 20px;
+        right: 20px;
+        width: 55px;
+        height: 55px;
+        font-size: 24px;
+    }
 }

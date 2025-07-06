@@ -1,6 +1,6 @@
 # 今天吃什麼？
 
-這是一個簡單的網頁應用程式，旨在幫助您決定今天要去哪裡用餐或喝飲料。它利用 Google Maps Places API 搜尋您當前位置附近的店家，並提供篩選和隨機選擇功能。
+這是一個簡單的網頁應用程式，旨在幫助您決定今天要去哪裡用餐或喝飲料。它利用 Google Apps Script 作為後端來搜尋您當前位置附近的店家，並提供篩選和隨機選擇功能。
 
 ## 功能特色
 
@@ -9,7 +9,6 @@
 *   **距離顯示**：在搜尋結果中顯示每個店家與您的直線距離。
 *   **隨機選擇**：如果您有選擇困難，可以使用「骰子」按鈕，讓應用程式為您隨機挑選一家店！
 *   **詳細地圖資訊**：點擊任何店家卡片，即可在新分頁中直接開啟該店家的 Google Maps 頁面，查看詳細資訊和導航。
-*   **API 金鑰管理**：支援在設定頁面中儲存您的 Google Maps API 金鑰，方便下次使用。
 
 ## 如何設定與執行
 
@@ -22,13 +21,15 @@
 2.  **開啟 `index.html`**：
     這是一個靜態網頁應用程式。您只需使用任何現代瀏覽器直接開啟 `index.html` 檔案即可運行。
 
-3.  **設定 Google Maps API 金鑰**：
+3.  **設定 Google Apps Script URL**：
     *   首次開啟應用程式時，會自動導向到設定頁面。
-    *   在「Google Maps API 金鑰」欄位中輸入您的金鑰。
-    *   調整「搜尋半徑」和「店家類型」等設定。
-    *   點擊「儲存並搜尋」按鈕。
+    *   在「Apps Script URL」欄位中輸入您部署的 Google Apps Script Web 應用程式 URL。
+    *   調整「店家類型」和「只顯示營業中」等設定。
+    *   點擊「儲存」按鈕。
 
-## 取得 Google Maps API 金鑰
+## 取得 Google Maps API 金鑰（用於 Google Apps Script）
+
+您的 Google Maps API 金鑰現在將用於您的 Google Apps Script 後端，而不是直接暴露在前端。以下是取得金鑰的步驟：
 
 1.  前往 [Google Cloud Console](https://console.cloud.google.com/) 並登入您的 Google 帳戶。
 2.  建立一個新專案（如果尚未建立）。
@@ -37,15 +38,16 @@
     *   **Places API**
 4.  導航到「API 和服務」>「憑證」頁面。
 5.  點擊「建立憑證」>「API 金鑰」。
-6.  **重要**：為了安全性，請限制您的 API 金鑰。建議將其限制為僅允許您的網域（如果您將其部署到伺服器）或僅允許 `http://localhost` 和 `file://` 協議（如果您是在本地開發）。
-7.  複製您的 API 金鑰，並將其貼入應用程式的設定頁面中。
+6.  **重要**：為了安全性，請限制您的 API 金鑰。建議將其限制為僅允許您的 Google Apps Script 服務帳戶（通常是您的 Apps Script 專案）使用。
+7.  複製您的 API 金鑰，並將其貼入您的 Google Apps Script 代碼中的 `GOOGLE_MAPS_API_KEY` 變數。
 
 ## 使用技術
 
 *   HTML5
 *   CSS3
 *   JavaScript
-*   Google Maps JavaScript API (包含 Places Library 和 Geometry Library)
+*   Leaflet.js (用於前端地圖顯示)
+*   Google Apps Script (作為後端，調用 Google Maps Places API)
 
 ## 授權
 

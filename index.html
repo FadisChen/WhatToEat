@@ -7,6 +7,10 @@
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍴️</text></svg>" type="image/svg+xml">
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <!-- Leaflet JavaScript -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 </head>
 <body>
     <div id="app-container">
@@ -23,10 +27,6 @@
                 </div>
                 <div class="view-content">
                     <div class="form-group">
-                        <label for="api-key">Google Maps API 金鑰:</label>
-                        <input type="password" id="api-key" name="api-key" placeholder="請輸入您的 API 金鑰">
-                    </div>
-                    <div class="form-group">
                         <label>只顯示營業中:<input type="checkbox" id="open-now" name="open-now" checked></label>
                         
                     </div>
@@ -36,7 +36,6 @@
                             <label><input type="radio" name="place-type" value="飲料店" checked> 飲料店</label>
                             <label><input type="radio" name="place-type" value="餐廳"> 餐廳</label>
                             <label><input type="radio" name="place-type" value="咖啡廳"> 咖啡廳</label>
-                            <label><input type="radio" name="place-type" value="酒吧"> 酒吧</label>
                             <label><input type="radio" name="place-type" value="自定義"> <input type="text" id="custom-place-type" placeholder="請輸入店家類型"></label>
                         </div>
                     </fieldset>
@@ -49,7 +48,6 @@
                  <div class="view-header">
                     <button id="back-from-results-btn" class="back-btn">←</button>
                     <h2>搜尋結果</h2>
-                    <button id="random-btn" class="header-btn">🎲</button>
                 </div>
                 <div id="results-container" class="scrollable"></div>
             </div>
@@ -68,6 +66,7 @@
         <!-- Action Buttons -->
         <button id="settings-btn" class="fab">⚙️</button>
         <button id="search-btn" class="fab">🔍</button>
+        <button id="random-btn">🎲</button>
 
         <!-- Loading Overlay -->
         <div id="loading-overlay" class="loading-overlay">
@@ -77,6 +76,5 @@
     </div>
 
     <script src="script.js"></script>
-    <script id="google-maps-script" async defer></script>
 </body>
 </html>

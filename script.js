@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
+    const appsScriptUrl = 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE';
     // Views
     const glassContainer = document.querySelector('.glass-container');
     const handleBar = document.querySelector('.handle-bar-container');
@@ -15,19 +16,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const backFromSettingsBtn = document.getElementById('back-from-settings-btn');
     const backFromResultsBtn = document.getElementById('back-from-results-btn');
     const backFromDetailsBtn = document.getElementById('back-from-details-btn');
-
+    const customPlaceType = document.getElementById('custom-place-type');
     // Form Elements & Containers
-    const apiKeyInput = document.getElementById('api-key');
     const openNowCheckbox = document.getElementById('open-now');
     const resultsContainer = document.getElementById('results-container');
     const detailsContent = document.getElementById('details-content');
     const loadingOverlay = document.getElementById('loading-overlay');
-    const googleMapsScript = document.getElementById('google-maps-script');
     
-    let map, marker, service;
+    let map, marker;
     let currentResults = [];
     let currentPlace = null;
-    let lastView = null; // To track the view before settings
+    let lastView = null;
+    let userLocation = null;
 
     // --- View Management ---
     function showView(viewToShow) {
@@ -43,15 +43,13 @@ document.addEventListener('DOMContentLoaded', () => {
             glassContainer.classList.remove('is-visible');
         }
         
-        const apiKeyExists = !!localStorage.getItem('googleMapsApiKey');
         const isSettings = viewToShow === settingsView;
         const isResults = viewToShow === resultsView;
         const isDetails = viewToShow === detailsView;
 
         // Control FAB visibility
         settingsBtn.style.display = (isSettings || isResults || isDetails) ? 'none' : 'flex';
-        searchBtn.style.display = (isSettings || !apiKeyExists || isResults || isDetails) ? 'none' : 'flex';
-        randomBtn.style.display = (viewToShow === resultsView && currentResults.length > 0) ? 'block' : 'none';
+        searchBtn.style.display = (isSettings || isResults || isDetails) ? 'none' : 'flex';
     }
 
     // --- Event Listeners ---
@@ -62,16 +60,10 @@ document.addEventListener('DOMContentLoaded', () => {
         search();
     });
 
-    saveAndSearchBtn.addEventListener('click', () => {
-        const apiKey = apiKeyInput.value;
-        if (!apiKey) {
-            alert('請輸入您的 Google Maps API 金鑰');
-            return;
-        }
-        localStorage.setItem('googleMapsApiKey', apiKey);
+    saveAndSearchBtn.addEventListener('click', () => {               
         localStorage.setItem('openNow', openNowCheckbox.checked);
         let placeTypes = Array.from(document.querySelectorAll('input[name="place-type"]:checked')).map(cb => cb.value);
-        const customPlaceType = document.getElementById('custom-place-type');
+        
         if (customPlaceType.value && placeTypes.includes('自定義')) {
             placeTypes.push(customPlaceType.value);
         }
@@ -79,39 +71,37 @@ document.addEventListener('DOMContentLoaded', () => {
 
         showView(null);
         if (!map) {
-            loadGoogleMap(); // Will search after init
+            initMap();
         }
     });
 
+    customPlaceType.addEventListener('focus', () => {
+        document.querySelector('input[name="place-type"][value="自定義"]').checked = true;
+    });
+
     backFromSettingsBtn.addEventListener('click', () => {
-        // Go back to the view that was active before settings, or default to map view
-        showView(null); // Always go back to map view
+        showView(null);
+        randomBtn.style.display = 'none'; // 隱藏骰子按鈕
     });
 
     backFromResultsBtn.addEventListener('click', () => {
         showView(null);
-        resultsContainer.style.padding = ""; // Reset padding
+        resultsContainer.style.padding = "";
+        randomBtn.style.display = 'none'; // 隱藏骰子按鈕
     });
 
     backFromDetailsBtn.addEventListener('click', () => {
         showView(resultsView);
     });
 
-
-
     // --- Settings Persistence ---
     function loadSettings() {
-        const savedApiKey = localStorage.getItem('googleMapsApiKey');
         const savedPlaceTypes = JSON.parse(localStorage.getItem('placeTypes'));
         const savedOpenNow = localStorage.getItem('openNow') === 'true';
 
-        if (savedApiKey) {
-            apiKeyInput.value = savedApiKey;
-            loadGoogleMap();
-            showView(null); // Show map only if API key exists
-        } else {
-            showView(settingsView); // Show settings if no API key
-        }
+        initMap();
+        showView(null);
+        
         if (savedOpenNow) {
             openNowCheckbox.checked = savedOpenNow;
         }
@@ -125,33 +115,35 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- Google Maps Integration ---
-    function loadGoogleMap() {
-        const apiKey = localStorage.getItem('googleMapsApiKey');
-        if (googleMapsScript.src || !apiKey) return; 
-
-        googleMapsScript.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places,geometry`;
-        googleMapsScript.onload = initMap;
-    }
-    
+    // --- Leaflet Map Integration ---
     function initMap() {
         if (!navigator.geolocation) {
             alert('您的瀏覽器不支援地理位置定位');
             return;
         }
+        
         navigator.geolocation.getCurrentPosition(position => {
-            const userLocation = { lat: position.coords.latitude, lng: position.coords.longitude };
-            map = new google.maps.Map(document.getElementById('map'), {
-                center: userLocation,
-                zoom: 15,
-                disableDefaultUI: true,
-                gestureHandling: 'greedy'
-            });
-            marker = new google.maps.Marker({ position: userLocation, map: map, draggable: true });
-            map.addListener('click', (e) => marker.setPosition(e.latLng));
-            service = new google.maps.places.PlacesService(map);
+            userLocation = { lat: position.coords.latitude, lng: position.coords.longitude };
             
-            // If user just saved settings and is now initializing, run a search
+            // 初始化 Leaflet 地圖
+            map = L.map('map').setView([userLocation.lat, userLocation.lng], 15);
+            
+            // 添加地圖圖層 (使用 OpenStreetMap)
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+            
+            // 添加可拖拽的標記
+            marker = L.marker([userLocation.lat, userLocation.lng], {
+                draggable: true
+            }).addTo(map);
+            
+            // 監聽地圖點擊事件
+            map.on('click', (e) => {
+                marker.setLatLng(e.latlng);
+            });
+            
+            // 如果用戶剛保存設定，執行搜索
             if (document.querySelector('.view.active')?.id === 'results-view') {
                 search();
             }
@@ -161,10 +153,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Search & Display Logic ---
-    function search() {
-        if (!service || !marker) {
-            if (!map && localStorage.getItem('googleMapsApiKey')) {
-                loadGoogleMap();
+    async function search() {
+        if (!marker) {
+            if (!map) {
+                initMap();
                 return;
             }
             alert('地圖尚未初始化，請稍候...');
@@ -177,34 +169,49 @@ document.addEventListener('DOMContentLoaded', () => {
         if (placeTypes.length === 0) {
             resultsContainer.innerHTML = '<p>請在設定中至少選擇一種店家類型。</p>';
             currentResults = [];
+            randomBtn.style.display = 'none'; // 隱藏骰子按鈕
             hideLoading();
             showView(resultsView);
             return;
         }
 
-        const center = marker.getPosition();
-        const circle = new google.maps.Circle({ center: center, radius: 2000 });
+        const markerPos = marker.getLatLng();
         const openNow = localStorage.getItem('openNow') === 'true';
-        const request = {
+        
+        const params = new URLSearchParams({
+            action: 'search',
+            lat: markerPos.lat.toString(),
+            lng: markerPos.lng.toString(),
             query: placeTypes.join(' '),
-            bounds: circle.getBounds(),
-            openNow: openNow
-        };
+            openNow: openNow.toString()
+        });
 
-        service.textSearch(request, (results, status) => {
-            resultsContainer.innerHTML = ''; // Clear previous results
-            resultsContainer.scrollTop = 0; // 將捲軸滾動到最上方
+        try {
+            const response = await fetch(`${appsScriptUrl}?${params}`);
+            const data = await response.json();
+            
+            resultsContainer.innerHTML = '';
+            resultsContainer.scrollTop = 0;
             hideLoading();
             
-            if (status === google.maps.places.PlacesServiceStatus.OK && results) {
-                currentResults = results.slice(0, 20);
+            if (data.status === 'OK' && data.results) {
+                currentResults = data.results;
                 displayResults(currentResults);
+                randomBtn.style.display = 'flex'; // 顯示骰子按鈕
             } else {
-                resultsContainer.innerHTML = '<p>找不到符合條件的店家。</p>';
+                resultsContainer.innerHTML = `<p>找不到符合條件的店家。${data.error ? '錯誤：' + data.error : ''}</p>`;
                 currentResults = [];
+                randomBtn.style.display = 'none'; // 隱藏骰子按鈕
             }
             showView(resultsView);
-        });
+        } catch (error) {
+            hideLoading();
+            resultsContainer.innerHTML = '<p>搜索失敗，請檢查網路連接或 Apps Script URL。</p>';
+            currentResults = [];
+            randomBtn.style.display = 'none'; // 隱藏骰子按鈕
+            showView(resultsView);
+            console.error('搜索錯誤:', error);
+        }
     }
 
     function displayResults(results) {
@@ -213,13 +220,13 @@ document.addEventListener('DOMContentLoaded', () => {
             resultsContainer.innerHTML = '<p>找不到正在營業的店家。</p>';
             return;
         }
-        const origin = marker.getPosition();
+        
         results.forEach(place => {
             const card = document.createElement('div');
             card.className = 'card';
             
-            const distance = google.maps.geometry.spherical.computeDistanceBetween(origin, place.geometry.location);
-            const distanceText = distance < 1000 ? `${Math.round(distance)} 公尺` : `${(distance / 1000).toFixed(1)} 公里`;
+            const distance = place.distance;
+            const distanceText = distance < 1000 ? `${distance} 公尺` : `${(distance / 1000).toFixed(1)} 公里`;
 
             card.innerHTML = `
                 <h3>${place.name}</h3>
@@ -234,33 +241,40 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Place Details ---
-    function showPlaceDetails(place) {
+    async function showPlaceDetails(place) {
         showLoading();
         currentPlace = place;
         
-        const request = {
-            placeId: place.place_id,
-            fields: ['name', 'formatted_address', 'formatted_phone_number', 'website', 'rating', 'user_ratings_total', 'opening_hours', 'photos', 'reviews']
-        };
+        const params = new URLSearchParams({
+            action: 'details',
+            placeId: place.place_id
+        });
 
-        service.getDetails(request, (placeDetails, status) => {
+        try {
+            const response = await fetch(`${appsScriptUrl}?${params}`);
+            const data = await response.json();
+            
             hideLoading();
             
-            if (status === google.maps.places.PlacesServiceStatus.OK) {
-                currentPlace = placeDetails;
-                displayPlaceDetails(placeDetails);
-                detailsContent.scrollTop = 0; // 將捲軸滾動到最上方
+            if (data.status === 'OK' && data.result) {
+                currentPlace = data.result;
+                displayPlaceDetails(data.result);
+                detailsContent.scrollTop = 0;
                 showView(detailsView);
             } else {
-                alert('無法載入店家詳細資訊');
+                alert('無法載入店家詳細資訊：' + (data.error || '未知錯誤'));
             }
-        });
+        } catch (error) {
+            hideLoading();
+            alert('載入店家詳細資訊失敗，請檢查網路連接。');
+            console.error('詳情載入錯誤:', error);
+        }
     }
 
     function displayPlaceDetails(place) {
         let photosHtml = '';
         if (place.photos && place.photos.length > 0) {
-            photosHtml = `<img src="${place.photos[0].getUrl({maxWidth: 400, maxHeight: 300})}" style="width: 100%; height: 200px; object-fit: cover; border-radius: 10px; margin-bottom: 15px;">`;
+            photosHtml = `<img src="${place.photos[0].url}" style="width: 100%; height: 200px; object-fit: cover; border-radius: 10px; margin-bottom: 15px;">`;
         }
 
         let openingHoursHtml = '';
@@ -313,7 +327,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Randomizer ---
     randomBtn.addEventListener('click', () => {
-        resultsContainer.style.padding = "20px 10px"; // Add padding for animation
+        resultsContainer.style.padding = "20px 10px";
         const cards = resultsContainer.querySelectorAll('.card');
         if (cards.length === 0) return;
 
